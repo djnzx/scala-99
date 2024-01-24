@@ -1,8 +1,7 @@
 package problems
 
-import tools.Sandbox
-
 import scala.annotation.tailrec
+import tools.Sandbox
 
 /** https://aperiodic.net/phil/scala/s-99/#p01 */
 object P01 {
