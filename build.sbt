@@ -1,73 +1,46 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-name := "scala-template"
-version := "0.0.1"
+name := "scala-99"
+version := "1.0.0"
 
-scalaVersion := "2.13.11"
+scalaVersion := "2.13.12"
 
-javacOptions := Seq(
-  "-source",
-  "17",
-  "-target",
-  "17"
-)
+javacOptions := Seq("-source", "17", "-target", "17")
 
+// https://docs.scala-lang.org/overviews/compiler-options/
 scalacOptions ++= Seq(
-  "-encoding",
-  "UTF-8",
-  "-feature",
-  "-deprecation",
-  "-unchecked",
-  "-language:postfixOps",
-  "-language:higherKinds",
+  "-feature",      // Emit warning and location for usages of features that should be imported explicitly
+  "-explaintypes", // Explain type errors in more detail
+  "-deprecation",  // Warn on deprecated API
+  "-unchecked",    // Enable warnings where generated code depends on assumptions
+  "-language:implicitConversions",
   "-language:existentials",
-  "-Wconf:cat=other-match-analysis:error",
-  "-Wunused",
-//  "-Xfatal-warnings",
+  "-language:higherKinds",
+  "-language:postfixOps",
+  "-Xlint",
+  "-Ywarn-dead-code",
+  "-Ywarn-unused",
+  "-Ywarn-value-discard",
   "-Ymacro-annotations",
   "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Ywarn-dead-code",
-//  "-Ywarn-unused",
-  "-Yrepl-class-based"
+  "-Wconf:cat=other-match-analysis:error",
+  "-Wunused"
 )
 
 libraryDependencies ++= Seq(
   /** some useful plugin things */
-  compilerPlugin("org.typelevel"  %% "kind-projector"     % "0.13.2" cross CrossVersion.full),
-  compilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.1"),
-  compilerPlugin("org.augustjune" %% "context-applied"    % "0.1.4"),
-  /** basic category things */
-  "org.typelevel"     %% "cats-core"               % "2.9.0",
-  /** effects */
-  "org.typelevel"     %% "cats-effect"             % "3.5.1",
-  "co.fs2"            %% "fs2-io"                  % "3.8.0",
-  /** json serialization */
-  "io.circe"          %% "circe-parser"            % "0.14.5",
-  "io.circe"          %% "circe-generic-extras"    % "0.14.3",
-  /** http */
-  "org.http4s"        %% "http4s-dsl"              % "0.23.18",
-  "org.http4s"        %% "http4s-circe"            % "0.23.18",
-  "org.http4s"        %% "http4s-blaze-server"     % "0.23.15",
-  "org.http4s"        %% "http4s-blaze-client"     % "0.23.15",
-  /** PostgreSQL */
-  "org.tpolecat"      %% "doobie-postgres"         % "1.0.0-RC2",
-  "org.tpolecat"      %% "doobie-hikari"           % "1.0.0-RC2",
-  "org.postgresql"     % "postgresql"              % "42.6.0",
-  /** kafka */
-  "com.github.fd4s"   %% "fs2-kafka"               % "2.6.1",
-  /** enum support */
+  compilerPlugin("org.typelevel"  %% "kind-projector"     % "0.13.2" cross CrossVersion.full), // https://github.com/typelevel/kind-projector
+  compilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.1"),                          // https://github.com/oleg-py/better-monadic-for
+  compilerPlugin("org.augustjune" %% "context-applied"    % "0.1.4"),                          // https://github.com/augustjune/context-applied
+  "co.fs2"            %% "fs2-io"                  % "3.9.4",
   "com.beachape"      %% "enumeratum"              % "1.7.3",
   "com.beachape"      %% "enumeratum-circe"        % "1.7.3",
   "com.beachape"      %% "enumeratum-doobie"       % "1.7.3",
   "com.beachape"      %% "enumeratum-cats"         % "1.7.3",
   "com.beachape"      %% "enumeratum-scalacheck"   % "1.7.3",
-  /** testing */
-  "org.scalatest"     %% "scalatest"               % "3.2.16",
+  "org.scalatest"     %% "scalatest"               % "3.2.17",
   "org.scalacheck"    %% "scalacheck"              % "1.17.0",
-  "org.scalatestplus" %% "scalacheck-1-17"         % "3.2.16.0",
-  "org.mockito"       %% "mockito-scala-scalatest" % "1.17.14",
-  /** colored & informative output */
-  "com.lihaoyi"       %% "pprint"                  % "0.8.1",
-  "com.lihaoyi"       %% "fansi"                   % "0.4.0"
+  "org.scalatestplus" %% "scalacheck-1-17"         % "3.2.17.0",
+  "org.mockito"       %% "mockito-scala-scalatest" % "1.17.30",
+  "com.lihaoyi"       %% "pprint"                  % "0.8.1"
 )
