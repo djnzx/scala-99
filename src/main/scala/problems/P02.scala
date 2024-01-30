@@ -3,7 +3,7 @@ package problems
 import scala.annotation.tailrec
 import tools.Sandbox
 
-/** https://aperiodic.net/phil/scala/s-99/#p02 */
+/** [[https://aperiodic.net/phil/scala/s-99/#p02]] */
 object P02 {
 
   @tailrec
