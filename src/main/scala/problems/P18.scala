@@ -3,7 +3,7 @@ package problems
 import scala.annotation.tailrec
 import tools.Sandbox
 
-/** [[https://aperiodic.net/phil/scala/s-99/#p17]] */
+/** [[https://aperiodic.net/phil/scala/s-99/#p18]] */
 object P18 {
 
   /** including i, excluding k */
