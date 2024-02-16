@@ -3,7 +3,7 @@ package problems
 import scala.annotation.tailrec
 import tools.Sandbox
 
-/** Insert an element at a given position into a list */
+/** [[https://aperiodic.net/phil/scala/s-99/#p21]] */
 object P21 {
 
   def insertAt[A](a: A, n: Int, xs: List[A]) = {

@@ -38,9 +38,9 @@ libraryDependencies ++= Seq(
   "com.beachape"      %% "enumeratum-doobie"       % "1.7.3",
   "com.beachape"      %% "enumeratum-cats"         % "1.7.3",
   "com.beachape"      %% "enumeratum-scalacheck"   % "1.7.3",
-  "org.scalatest"     %% "scalatest"               % "3.2.17",
+  "org.scalatest"     %% "scalatest"               % "3.2.18",
   "org.scalacheck"    %% "scalacheck"              % "1.17.0",
-  "org.scalatestplus" %% "scalacheck-1-17"         % "3.2.17.0",
+  "org.scalatestplus" %% "scalacheck-1-17"         % "3.2.18.0",
   "org.mockito"       %% "mockito-scala-scalatest" % "1.17.30",
   "com.lihaoyi"       %% "pprint"                  % "0.8.1"
 )
