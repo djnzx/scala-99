@@ -24,9 +24,6 @@ object P35 {
 
   def primeFactorsDistinct(n: Int): Set[Int] = primeFactors(n).toSet
 
-  def primeFactorsWithCount(n: Int): Map[Int, Int] =
-    primeFactors(n)
-      .groupMapReduce(identity)(_ => 1)(_ + _)
 }
 
 class P35 extends Sandbox {
@@ -41,19 +38,6 @@ class P35 extends Sandbox {
 
     forAll(data) { case (in, expected) =>
       primeFactors(in) shouldBe expected
-    }
-
-  }
-
-  test("with count") {
-
-    val data = Table(
-      "in" -> "expected",
-      315  -> Map(3 -> 2, 5 -> 1, 7 -> 1)
-    )
-
-    forAll(data) { case (in, expected) =>
-      primeFactorsWithCount(in) shouldBe expected
     }
 
   }
