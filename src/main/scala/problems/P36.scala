@@ -10,7 +10,7 @@ object P36 {
   import P10._
   import P35._
 
-  def primeFactorMultiplicity1(a: Int): Map[Int, Int] =
+  def primeFactorMultiplicity(a: Int): Map[Int, Int] =
     pack(primeFactors(a)).toMap
 
   def primeFactorMultiplicity2(n: Int): Map[Int, Int] =
@@ -27,12 +27,13 @@ class P36 extends Sandbox {
     val data = Table(
       inOutHeader,
       8   -> Map(2 -> 3),
+      10  -> Map(2 -> 1, 5 -> 1),
       24  -> Map(2 -> 3, 3 -> 1),
       315 -> Map(3 -> 2, 5 -> 1, 7 -> 1)
     )
 
     forAll(data) { case (in, expected) =>
-      primeFactorMultiplicity1(in) shouldBe expected
+      primeFactorMultiplicity(in) shouldBe expected
       primeFactorMultiplicity2(in) shouldBe expected
     }
   }
