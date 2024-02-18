@@ -49,7 +49,7 @@ object P49 {
   // recursive string based V1.2
   def gray5(n: Int): List[String] = n match {
     case 0 => List("")
-    case n => gray5(n - 1).flatMap { d => variants.map(d + _) }
+    case n => gray5(n - 1).flatMap(d => variants.map(d + _))
   }
 
   // tail recursive, string

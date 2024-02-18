@@ -10,7 +10,7 @@ object Timed {
     val spent = time() - start
     (a, spent)
   }
-  
+
   def printTimed[A](body: => A, name: String = "res") = {
     val (a, spent) = timed(body)
     println(s"$name: $a")

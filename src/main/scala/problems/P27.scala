@@ -30,7 +30,7 @@ object P27 {
         combinations(n, la) // possible groups of N items
           .flatMap { cs: List[A] => // c       - subgroup
             groupN1(ns, la -- cs)   // la -- c - rest of the team, build recursively
-              .map { cs :: _ } // attach subgroup
+              .map(cs :: _) // attach subgroup
           }
     }
 
@@ -39,7 +39,7 @@ object P27 {
     case n :: ns =>
       for {
         c <- combinations(n, la)
-        g <- groupN2(ns, la -- c).map { c :: _ }
+        g <- groupN2(ns, la -- c).map(c :: _)
       } yield g
   }
 

@@ -36,7 +36,7 @@ object P26 {
 
   def pickN2[A](n: Int, as: List[A]): List[List[A]] = n match {
     case 0 => List(List.empty)
-    case n => make(as) { f(n - 1) }
+    case n => make(as)(f(n - 1))
   }
 
   // combinations w/permutations

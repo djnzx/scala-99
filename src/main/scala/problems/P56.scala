@@ -4,14 +4,11 @@ import pprint.log
 import tools.Sandbox
 
 /** [[https://aperiodic.net/phil/scala/s-99/#p56]] */
-object P56 {
-  import P55._
-}
+object P56 {}
 
 class P56 extends Sandbox {
 
   import P55._
-  import P56._
 
   test("mirror") {
     val data = Table(

@@ -10,7 +10,7 @@ object P24 {
 
   def lotto(cnt: Int, mx: Int) =
     extractNrandom(cnt, rangeUnfold(1, mx))
-    
+
 }
 
 class P24 extends Sandbox {
@@ -18,7 +18,7 @@ class P24 extends Sandbox {
 
   test("normal") {
     val all = (1 to 49).toList
-    
+
     val actual = lotto(6, 49)
 
     actual.length shouldBe 6

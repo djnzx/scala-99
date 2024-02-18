@@ -12,7 +12,7 @@ object P37 {
   import P36._
 
   /** a^b^ */
-  def ab(a: Int, b: Int): Long = (1 to b).foldLeft(1L) { (acc, _) => acc * a }
+  def ab(a: Int, b: Int): Long = (1 to b).foldLeft(1L)((acc, _) => acc * a)
 
   /** (m-1)*m^(p-1)^ */
   def mp(m: Int, p: Int): Long = (m - 1).toLong * ab(m, p - 1)

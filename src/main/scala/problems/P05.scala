@@ -1,7 +1,7 @@
 package problems
 
-import tools.Sandbox
 import scala.annotation.tailrec
+import tools.Sandbox
 
 /** [[https://aperiodic.net/phil/scala/s-99/#p05]] */
 object P05 {
@@ -27,7 +27,6 @@ object P05 {
 
     go(as, (Nil, 0))
   }
-
 
 }
 
@@ -57,6 +56,5 @@ class P05 extends Sandbox {
   test("reverse and len - non-empty") {
     reverseAndLen(List(1, 5)) shouldEqual (List(5, 1), 2)
   }
-
 
 }

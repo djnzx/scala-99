@@ -1,8 +1,7 @@
 package problems
 
-import tools.Ex.neverByDesign
-
 import scala.collection.immutable.LazyList.#::
+import tools.Ex.neverByDesign
 import tools.Sandbox
 
 /** Determine the prime factors of a given positive integer
