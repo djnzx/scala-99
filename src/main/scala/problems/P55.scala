@@ -9,7 +9,21 @@ import tools.Sandbox
   */
 object P55 {
 
-  sealed trait Tree[+A]
+  sealed trait Tree[+A] {
+    def mirror: Tree[A] = this match {
+      case Node(value, l, r) => Node(value, r, l)
+      case t @ End           => t
+    }
+    def isMirrorOf[B](that: Tree[B]): Boolean = (this, that) match {
+      case (End, End)                         => true
+      case (Node(_, ll, lr), Node(_, rl, rr)) => ll.isMirrorOf(rr) && lr.isMirrorOf(rl)
+      case (_, _)                             => false
+    }
+    def isSymmetric: Boolean = this match {
+      case End           => true
+      case Node(_, l, r) => l isMirrorOf r
+    }
+  }
   case class Node[+A](value: A, l: Tree[A], r: Tree[A]) extends Tree[A]
   case object End extends Tree[Nothing]
   object Node {
