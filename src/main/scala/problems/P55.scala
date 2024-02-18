@@ -63,6 +63,25 @@ object P55 {
             ls.flatMap(lt => rs.map(rt => Node(value, lt, rt)))
           }
     }
+
+    def symmetricBalancedTrees[A](value: A, n: Int) =
+      List(n)
+        .filter(x => (x & 1) == 1)
+        .flatMap(x => cBalanced(value, x))
+        .filter(_.isSymmetric)
+
+    def fromSeq[A: Ordering](xs: Seq[A]): Tree[A] =
+      xs.foldLeft(End: Tree[A])((t, x) => t.add(x))
+
+    def fromList[A: Ordering](xs: List[A]): Tree[A] = {
+
+      def go(xs: List[A], t: Tree[A]): Tree[A] = xs match {
+        case Nil     => t
+        case x :: xs => go(xs, t.add(x))
+      }
+
+      go(xs, End)
+    }
   }
 }
 

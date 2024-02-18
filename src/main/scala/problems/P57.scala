@@ -36,9 +36,34 @@ class P57 extends Sandbox {
   }
 
   test("add yet another") {
-    val built = Seq(4, 2, 1, 3, 15, 10, 20).foldLeft(End: Tree[Int])((t, x) => t.add(x))
+    val built = Tree.fromList(List(4, 2, 1, 3, 15, 10, 20))
     log(built, width = 200)
     built shouldBe Node(4, Node(2, Node(1), Node(3)), Node(15, Node(10), Node(20)))
+  }
+
+  test("fromList/fromSeq") {
+    val data = Table(
+      inHeader,
+      List(5, 3, 18, 1, 4, 12, 21),
+      List(3, 2, 5, 7, 4)
+    )
+
+    forAll(data) { in =>
+      Tree.fromSeq(in) shouldBe Tree.fromList(in)
+    }
+
+  }
+
+  test("is-symmetric") {
+    val data = Table(
+      inOutHeader,
+      Tree.fromList(List(5, 3, 18, 1, 4, 12, 21)) -> true,
+      Tree.fromList(List(3, 2, 5, 7, 4))          -> false
+    )
+
+    forAll(data) { case (in, exp) =>
+      in.isSymmetric shouldBe exp
+    }
   }
 
 }
