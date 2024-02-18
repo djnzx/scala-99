@@ -1,6 +1,7 @@
 package problems
 
 import pprint.log
+import scala.math.Ordered.orderingToOrdered
 import tools.Sandbox
 
 /** Construct completely balanced binary trees
@@ -22,6 +23,13 @@ object P55 {
     def isSymmetric: Boolean = this match {
       case End           => true
       case Node(_, l, r) => l isMirrorOf r
+    }
+    // BST add note to help compiler due to the fact B in the contravariant position
+    def add[B >: A](x: B)(implicit ev: Ordering[B]): Tree[B] = this match {
+      case End                            => Node(x)
+      case Node(value, l, r) if x < value => Node(value, l.add(x), r)
+      case Node(value, l, r) if x > value => Node(value, l, r.add(x))
+      case theSame                        => theSame
     }
   }
   case class Node[+A](value: A, l: Tree[A], r: Tree[A]) extends Tree[A]
