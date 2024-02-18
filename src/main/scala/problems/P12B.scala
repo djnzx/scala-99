@@ -1,11 +1,11 @@
 package problems
 
 import scala.annotation.tailrec
-import tools.Ex
+import tools.Ex.unexpected
 import tools.Sandbox
 
 /** [[https://aperiodic.net/phil/scala/s-99/#p12]] */
-object P12B extends Ex {
+object P12B {
 
   import P12A.unpackOne
 

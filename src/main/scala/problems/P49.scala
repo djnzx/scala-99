@@ -4,6 +4,7 @@ import org.scalatest.prop.TableFor1
 import scala.annotation.tailrec
 import tools.Sandbox
 
+/** [[https://aperiodic.net/phil/scala/s-99/#p49]] */
 object P49 {
   val variants = List(0, 1)
 

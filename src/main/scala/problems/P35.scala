@@ -1,6 +1,7 @@
 package problems
 
-import problems.P12B.neverByDesign
+import tools.Ex.neverByDesign
+
 import scala.collection.immutable.LazyList.#::
 import tools.Sandbox
 

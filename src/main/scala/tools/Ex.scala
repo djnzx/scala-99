@@ -6,3 +6,5 @@ trait Ex {
   def unexpected: Nothing = sys.error("unexpected data provided")
 
 }
+
+object Ex extends Ex
