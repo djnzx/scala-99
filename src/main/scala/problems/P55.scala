@@ -20,9 +20,22 @@ object P55 {
       case (Node(_, ll, lr), Node(_, rl, rr)) => ll.isMirrorOf(rr) && lr.isMirrorOf(rl)
       case (_, _)                             => false
     }
+
+    /** 56 */
     def isSymmetric: Boolean = this match {
       case End           => true
       case Node(_, l, r) => l isMirrorOf r
+    }
+    def isBalanced(lh: Int, rh: Int): Boolean = math.abs(lh - rh) <= 1
+    // None - unbalanced
+    // Some(x) - balanced with max height = x
+    def isHeightBalanced: Option[Int] = this match {
+      case End           => Some(0)
+      case Node(_, l, r) =>
+        (l.isHeightBalanced, r.isHeightBalanced) match {
+          case (Some(lh), Some(rh)) => Some(lh -> rh).filter { case (lh, rh) => isBalanced(lh, rh) }.map(_ => lh max rh).map(_ + 1)
+          case _                    => None
+        }
     }
     // BST add note to help compiler due to the fact B in the contravariant position
     def add[B >: A](x: B)(implicit ev: Ordering[B]): Tree[B] = this match {
@@ -39,40 +52,60 @@ object P55 {
   }
   object Tree {
 
-    /** given number, provide all possible combinations of sizes for left & right sub-trees */
-    def combsLR(n: Int): List[(Int, Int)] = n match {
-      case 0                 => List.empty
-      case n if (n & 1) == 0 =>
+    def isEven(x: Int): Boolean = (x & 1) == 0
+    def isOdd: Int => Boolean = isEven
+
+    object IsOdd {
+      def unapply(x: Int): Option[Int] = Some(x).filter(isOdd)
+    }
+    object IsEven {
+      def unapply(x: Int): Option[Int] = Some(x).filter(isEven)
+    }
+
+    /** given number, provide all possible combinations of sizes for left & right sub-trees with size diff<=1 */
+    def combsLR1(n: Int): List[(Int, Int)] = n match {
+      case 0         => List.empty
+      case IsEven(n) =>
         val half = n / 2
         List(half -> half)
-      case n1                =>
+      case n1        => // odd
         val half = n1 / 2
         val pair = half -> (n1 - half)
         List(pair, pair.swap)
     }
 
-    def cBalanced[A](value: A, n: Int): List[Tree[A]] = n match {
+    /** 55. completely balanced all possible trees: n nodes diff <= 1 */
+    def mkCompletelyBalanced[A](value: A, n: Int): List[Tree[A]] = n match {
       case 0 => List(End)
       case 1 => List(Node(value))
       case n =>
-        combsLR(n - 1)
+        combsLR1(n - 1)
           .flatMap { case (l, r) =>
-            val ls = cBalanced(value, l)
-            val rs = cBalanced(value, r)
+            val ls = mkCompletelyBalanced(value, l)
+            val rs = mkCompletelyBalanced(value, r)
 
             ls.flatMap(lt => rs.map(rt => Node(value, lt, rt)))
           }
     }
 
-    def symmetricBalancedTrees[A](value: A, n: Int) =
+    /** 58. is symmetric is a harder limitation */
+    def mkSymmetricBalanced[A](value: A, n: Int): List[Tree[A]] =
       List(n)
-        .filter(x => (x & 1) == 1)
-        .flatMap(x => cBalanced(value, x))
+        .filter(isOdd)
+        .flatMap(x => mkCompletelyBalanced(value, x))
         .filter(_.isSymmetric)
+
+    /** 59. is a bit relaxed than completely balanced */
+    def mkHeightBalanced[A](value: A, n: Int): List[Tree[A]] = n match {
+      case 0 => List(End)
+      case 1 => List(Node(value))
+      case n => ??? // TODO: generate all and check criteria
+    }
 
     def fromSeq[A: Ordering](xs: Seq[A]): Tree[A] =
       xs.foldLeft(End: Tree[A])((t, x) => t.add(x))
 
+    /** 57. BST */
     def fromList[A: Ordering](xs: List[A]): Tree[A] = {
 
       def go(xs: List[A], t: Tree[A]): Tree[A] = xs match {
@@ -105,7 +138,7 @@ class P55 extends Sandbox {
     )
 
     forAll(data) { (in, out) =>
-      Tree.combsLR(in) shouldBe out
+      Tree.combsLR1(in) shouldBe out
     }
   }
 
@@ -113,46 +146,26 @@ class P55 extends Sandbox {
     val data = Table(
       inOutHeader,
       1 -> List(
-        Node(value = 'Z', l = End, r = End)
+        Node('Z', End, End)
       ),
       2 -> List(
-        Node(value = 'Z', l = End, r = Node(value = 'Z', l = End, r = End)),
-        Node(value = 'Z', l = Node(value = 'Z', l = End, r = End), r = End)
+        Node('Z', End, Node('Z', End, End)),
+        Node('Z', Node('Z', End, End), End)
       ),
       3 -> List(
-        Node(
-          value = 'Z',
-          l = Node(value = 'Z', l = End, r = End),
-          r = Node(value = 'Z', l = End, r = End)
-        )
+        Node('Z', Node('Z', End, End), Node('Z', End, End))
       ),
       4 -> List(
-        Node(
-          value = 'Z',
-          l = Node(value = 'Z', l = End, r = End),
-          r = Node(value = 'Z', l = End, r = Node(value = 'Z', l = End, r = End))
-        ),
-        Node(
-          value = 'Z',
-          l = Node(value = 'Z', l = End, r = End),
-          r = Node(value = 'Z', l = Node(value = 'Z', l = End, r = End), r = End)
-        ),
-        Node(
-          value = 'Z',
-          l = Node(value = 'Z', l = End, r = Node(value = 'Z', l = End, r = End)),
-          r = Node(value = 'Z', l = End, r = End)
-        ),
-        Node(
-          value = 'Z',
-          l = Node(value = 'Z', l = Node(value = 'Z', l = End, r = End), r = End),
-          r = Node(value = 'Z', l = End, r = End)
-        )
+        Node('Z', Node('Z', End, End), Node('Z', End, Node('Z', End, End))),
+        Node('Z', Node('Z', End, End), Node('Z', Node('Z', End, End), End)),
+        Node('Z', Node('Z', End, Node('Z', End, End)), Node('Z', End, End)),
+        Node('Z', Node('Z', Node('Z', End, End), End), Node('Z', End, End))
       )
     )
 
     forAll(data) { (in, out) =>
-      val actual = Tree.cBalanced('Z', in)
-//      log(actual)
+      val actual = Tree.mkCompletelyBalanced('Z', in)
+//      pprint.log(actual, showFieldNames = false)
       actual shouldBe out
     }
   }

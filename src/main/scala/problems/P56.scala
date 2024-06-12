@@ -5,7 +5,6 @@ import tools.Sandbox
 
 /** [[https://aperiodic.net/phil/scala/s-99/#p56]] */
 object P56 {
-  import P55._
 }
 
 class P56 extends Sandbox {

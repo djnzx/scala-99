@@ -21,7 +21,7 @@ class P58 extends Sandbox {
     )
 
     forAll(data) { n =>
-      val t = Tree.symmetricBalancedTrees("a", n)
+      val t = Tree.mkSymmetricBalanced("a", n)
       log(n -> t)
     }
   }
