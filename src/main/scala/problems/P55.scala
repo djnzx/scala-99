@@ -1,7 +1,8 @@
 package problems
 
-import cats.implicits.catsSyntaxTuple2Semigroupal
+import cats.implicits.{catsSyntaxTuple2Semigroupal, toFunctorOps}
 import pprint.log
+
 import scala.math.Ordered.orderingToOrdered
 import tools.Sandbox
 
@@ -126,19 +127,13 @@ object P55 {
       def mk(h: Int, cache0: Map[Int, LazyList[Tree[A]]]): (LazyList[Tree[A]], Map[Int, LazyList[Tree[A]]]) =
         h match {
           case 0 =>
-            cache0.get(h) match {
-              case Some(xx) => xx -> cache0
-              case None     =>
-                val xx = LazyList(End)
-                xx -> (cache0 ++ Map(h -> xx))
-            }
+            pprint.log(h)
+            val t0 = LazyList(End)
+            t0 -> (cache0 + (h -> t0))
           case 1 =>
-            cache0.get(h) match {
-              case Some(xx) => xx -> cache0
-              case None     =>
-                val xx = LazyList(Node(value))
-                xx -> (cache0 ++ Map(h -> xx))
-            }
+            pprint.log(h)
+            val t1 = LazyList(Node(value))
+            t1 -> (cache0 + (h -> t1))
           case _ =>
             val (h1ts, cache1p) = cache0.get(h - 1) match {
               case Some(xx) => xx -> cache0
@@ -146,7 +141,7 @@ object P55 {
                 val (xx, cacheA) = mk(h - 1, cache0)
                 xx -> (cache0 ++ cacheA)
             }
-            pprint.log((h, h - 1, cache1p))
+            pprint.log((h, h - 1, cache1p.fmap(_.size).toList.sorted))
             val cache1 = cache0 ++ cache1p
 
             val (h2ts, cache2p) = cache1.get(h - 2) match {
@@ -155,14 +150,14 @@ object P55 {
                 val (xx, cacheA) = mk(h - 2, cache1)
                 xx -> (cache1 ++ cacheA)
             }
-            pprint.log((h, h - 2, cache2p))
+            pprint.log((h, h - 2, cache2p.fmap(_.size).toList.sorted))
 
+            print("combining...")
             val tt = h1ts.flatMap(lt => h1ts.map(rt => Node(value, lt, rt))) ++
               h1ts.flatMap(lt => h2ts.map(rt => Node(value, lt, rt))) ++
               h2ts.flatMap(lt => h1ts.map(rt => Node(value, lt, rt)))
-
-            val cache3 = Map(h -> tt)
-            tt -> (cache1 ++ cache2p ++ cache3)
+            println(tt.size)
+            tt -> (cache1 ++ cache2p + (h -> tt))
         }
 
       mk(h, Map.empty)._1
