@@ -1,8 +1,7 @@
 package problems
 
-import cats.implicits.{catsSyntaxTuple2Semigroupal, toFunctorOps}
+import cats.implicits.catsSyntaxTuple2Semigroupal
 import pprint.log
-
 import scala.math.Ordered.orderingToOrdered
 import tools.Sandbox
 
@@ -13,10 +12,46 @@ import tools.Sandbox
 object P55 {
 
   sealed trait Tree[+A] {
+
+    /** 61 */
     def size: Int = this match {
       case End           => 0
       case Node(_, l, r) => 1 + l.size + r.size
     }
+    def leafCount: Int = this match {
+      case End           => 0
+      case Node(_, l, r) => l.leafCount + r.leafCount
+    }
+
+    /** 61A */
+    def collectAll: List[A] = this match {
+      case End               => List.empty
+      case Node(value, l, r) => value :: l.collectAll ::: r.collectAll
+    }
+
+    /** leaves only */
+    def collectLeaves: List[A] = this match {
+      case End                   => List.empty
+      case Node(value, End, End) => List(value)
+      case Node(_, l, r)         => l.collectLeaves ::: r.collectLeaves
+    }
+
+    /** 62A - non leaves only */
+    def collectInternal: List[A] = this match {
+      case End               => List.empty
+      case Node(_, End, End) => List.empty
+      case Node(value, l, r) => value :: l.collectInternal ::: r.collectInternal
+    }
+
+    /** 62B */
+    def collectAtLevel(n: Int): List[A] = this match {
+      case End                         => List.empty
+      // collect
+      case Node(value, _, _) if n == 1 => List(value)
+      // dive deeper
+      case Node(_, l, r)               => l.collectAtLevel(n - 1) ::: r.collectAtLevel(n - 1)
+    }
+
     def mirror: Tree[A] = this match {
       case Node(value, l, r) => Node(value, r, l)
       case t @ End           => t
@@ -102,7 +137,27 @@ object P55 {
         .flatMap(x => mkCompletelyBalanced(value, x))
         .filter(_.isSymmetric)
 
-    /** 59.B. given N (Nodes count) is a bit relaxed than completely balanced */
+    /** 59 */
+    def mkHeightBalanced[A](value: A, h: Int): LazyList[Tree[A]] = h match {
+      case 0 => LazyList(End)
+      case 1 => LazyList(Node(value))
+      case h =>
+        val full = mkHeightBalanced(value, h - 1)
+        val short = mkHeightBalanced(value, h - 2)
+        val tt1 = full.flatMap(lt => full.map(rt => Node(value, lt, rt)))
+        val tt2 = full.flatMap { ft =>
+          short.flatMap { st =>
+            LazyList(Node(value, ft, st), Node(value, st, ft))
+          }
+        }
+        tt1 ++ tt2
+    }
+
+    /** 60 brute-force
+      * for N=5
+      * we generate 42 trees
+      * and filter out 36 of them
+      */
     def mkHeightBalancedN[A](value: A, n: Int): LazyList[Tree[A]] = n match {
       case 0 => LazyList(End)
       case 1 => LazyList(Node(value))
@@ -120,48 +175,33 @@ object P55 {
           }
     }
 
-    /** 59.A. */
-    // TODO: it hangs h > 5, memoize!
-    def mkHeightBalanced[A](value: A, h: Int): LazyList[Tree[A]] = {
-
-      def mk(h: Int, cache0: Map[Int, LazyList[Tree[A]]]): (LazyList[Tree[A]], Map[Int, LazyList[Tree[A]]]) =
-        h match {
-          case 0 =>
-            pprint.log(h)
-            val t0 = LazyList(End)
-            t0 -> (cache0 + (h -> t0))
-          case 1 =>
-            pprint.log(h)
-            val t1 = LazyList(Node(value))
-            t1 -> (cache0 + (h -> t1))
-          case _ =>
-            val (h1ts, cache1p) = cache0.get(h - 1) match {
-              case Some(xx) => xx -> cache0
-              case None     =>
-                val (xx, cacheA) = mk(h - 1, cache0)
-                xx -> (cache0 ++ cacheA)
-            }
-            pprint.log((h, h - 1, cache1p.fmap(_.size).toList.sorted))
-            val cache1 = cache0 ++ cache1p
-
-            val (h2ts, cache2p) = cache1.get(h - 2) match {
-              case Some(xx) => xx -> cache1
-              case None     =>
-                val (xx, cacheA) = mk(h - 2, cache1)
-                xx -> (cache1 ++ cacheA)
-            }
-            pprint.log((h, h - 2, cache2p.fmap(_.size).toList.sorted))
-
-            print("combining...")
-            val tt = h1ts.flatMap(lt => h1ts.map(rt => Node(value, lt, rt))) ++
-              h1ts.flatMap(lt => h2ts.map(rt => Node(value, lt, rt))) ++
-              h2ts.flatMap(lt => h1ts.map(rt => Node(value, lt, rt)))
-            println(tt.size)
-            tt -> (cache1 ++ cache2p + (h -> tt))
-        }
-
-      mk(h, Map.empty)._1
+    def minHbalNodes(h: Int): Int = h match {
+      case 0 => 0
+      case 1 => 1
+      case n => 1 + minHbalNodes(n - 1) + minHbalNodes(n - 2)
     }
+    def maxHbalNodes(h: Int): Int = h match {
+      case 0 => 0
+      case _ => (2 << (h - 1)) - 1
+    }
+
+    def minHbalHeight(n: Int): Int = n match {
+      case 0 => 0
+      case n => 1 + minHbalHeight(n / 2)
+    }
+    def maxHbalHeight(n: Int): Int =
+      LazyList.from(1).takeWhile(x => minHbalNodes(x) <= n).last
+
+    /** 60 smart, based on the calculation
+      * for N=5
+      * we generate 15 trees
+      * and filter out 9 of them
+      */
+    def mkHeightBalancedN2[A](value: A, n: Int): LazyList[Tree[A]] =
+      LazyList
+        .from(minHbalHeight(n) to maxHbalHeight(n))
+        .flatMap(h => mkHeightBalanced(value, h))
+        .filter(_.size == n)
 
     def fromSeq[A: Ordering](xs: Seq[A]): Tree[A] =
       xs.foldLeft(End: Tree[A])((t, x) => t.add(x))
@@ -176,6 +216,9 @@ object P55 {
 
       go(xs, End)
     }
+
+    /** 63. */
+    def mkCompleteBinaryTree[A](value: A, n: Int): Tree[A] = ??? // TODO
   }
 }
 
