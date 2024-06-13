@@ -1,5 +1,6 @@
 package problems
 
+import cats.implicits.catsSyntaxOptionId
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import pprint.log
 import scala.math.Ordered.orderingToOrdered
@@ -217,8 +218,53 @@ object P55 {
       go(xs, End)
     }
 
+    /*
+      12 means
+                    o
+                 /    \
+               /        \
+             /            \
+            o              o
+          /   \          /   \
+         o     o        o     o
+       /  \   /  \    /
+      o    o o    o  o
+     */
+    def split(n: Int, w: Int, l: Int, r: Int): (Int, Int) =
+      if (n == 0) l -> r
+      else if (n > w * 2) split(n - w * 2, w << 1, l + w, r + w)
+      else if (n > w) (l + w, r + (n - w))
+      else (l + n, r)
+
+    /** sizes for the left and right subtrees */
+    def mkLR(n: Int): (Int, Int) = n match {
+      case 0 => ???
+      case n => split(n - 1, 1, 0, 0)
+    }
+
     /** 63. */
-    def mkCompleteBinaryTree[A](value: A, n: Int): Tree[A] = ??? // TODO
+    def mkCompleteBinaryTree[A](value: A, n: Int): Tree[A] = n match {
+      case 0 => End
+      case n =>
+        val (lc, rc) = mkLR(n)
+        Node(
+          value,
+          mkCompleteBinaryTree(value, lc),
+          mkCompleteBinaryTree(value, rc)
+        )
+    }
+
+    def mkCompleteBinaryTree2[A](value: A, n: Int): Tree[A] = {
+
+      def mk(addr: Int): Tree[A] =
+        if (addr > n) End
+        else Node(value, mk(2 * addr), mk(2 * addr + 1))
+
+      mk(1)
+    }
+
+
+
   }
 }
 
