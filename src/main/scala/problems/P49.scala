@@ -12,7 +12,7 @@ object P49 {
   def next(xs: List[List[Int]]): List[List[Int]] = variants.flatMap(d => xs.map(d :: _))
 
   val baseS = List("")
-  def nextS(xs: List[String]): List[String] = variants.flatMap(d => xs.map(d + _))
+  def nextS(xs: List[String]): List[String] = variants.flatMap(d => xs.map(d.toString + _))
 
   // classic recursive implementation
   def gray1(n: Int): List[List[Int]] = n match {

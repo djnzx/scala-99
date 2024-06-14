@@ -3,10 +3,28 @@ package problems
 import tools.Sandbox
 
 /** [[https://aperiodic.net/phil/scala/s-99/#p59]] */
-object P59 {}
+object P59 {
+  import P55._
+
+  def mkHeightBalanced[A](value: A, h: Int): LazyList[Tree[A]] = h match {
+    case 0 => LazyList(End)
+    case 1 => LazyList(Node(value))
+    case h =>
+      val full = mkHeightBalanced(value, h - 1)
+      val short = mkHeightBalanced(value, h - 2)
+      val tt1 = full.flatMap(lt => full.map(rt => Node(value, lt, rt)))
+      val tt2 = full.flatMap { ft =>
+        short.flatMap { st =>
+          LazyList(Node(value, ft, st), Node(value, st, ft))
+        }
+      }
+      tt1 ++ tt2
+  }
+
+}
 
 class P59 extends Sandbox {
-  import P55._
+  import P59._
 
   test("all height balanced trees of height") {
     val data = Table(
@@ -21,7 +39,7 @@ class P59 extends Sandbox {
     )
 
     forAll(data) { h =>
-      val ts = Tree.mkHeightBalanced("a", h)
+      val ts = mkHeightBalanced("a", h)
       pprint.log(h -> ts, showFieldNames = false)
       val sizes = ts.map(_.size).distinct.sorted
       pprint.log((h, ts.size, s"${sizes.head}...${sizes.last}"))
