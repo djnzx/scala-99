@@ -9,30 +9,27 @@ import tools.Sandbox
 object P64 {
   import P55._
 
-  sealed trait PTree[+A]
-  case class PNode[+A](value: A, l: PTree[A], r: PTree[A], x: Int, y: Int) extends PTree[A]
-  case object PEnd extends PTree[Nothing]
-  object PNode {
-    def apply[A](value: A, x: Int, y: Int): PNode[A] = PNode(value, PEnd, PEnd, x, y)
-  }
+  case class At[A](value: A, x: Int, y: Int)
 
-  def layout[A](t: Tree[A]): PTree[A] = {
+  def layout[A](t: Tree[A]): Tree[At[A]] = {
 
-    def go(t: Tree[A], x: Int, y: Int): (PTree[A], Int) = t match {
+    def go(t: Tree[A], x: Int, level: Int): (Tree[At[A]], Int) = t match {
       case Node(value, l, r) =>
-        val (lt, x1) = go(l, x, y + 1)
+        val (lt, x1) = go(l, x, level + 1)
         val (xn, x2) = (x1, x1 + 1)
-        val (rt, x3) = go(r, x2, y + 1)
-        PNode(value, lt, rt, xn, y) -> x3
-      case End               => PEnd -> x
+        val (rt, x3) = go(r, x2, level + 1)
+        val at = At(value, xn, level)
+        Node(at, lt, rt) -> x3
+      case End               => End -> x
     }
 
-    go(t, x = 1, y = 1)._1
+    go(t, x = 1, level = 1)._1
   }
 
 }
 
 class P64 extends Sandbox {
+  import P55._
   import P57._
   import P64._
 
@@ -41,54 +38,38 @@ class P64 extends Sandbox {
   test("layout") {
     val l = layout(sample)
     pprint.log(l)
-    l shouldBe PNode(
-      'n',
-      l = PNode(
-        'k',
-        l = PNode(
-          'c',
-          l = PNode('a', l = PEnd, r = PEnd, x = 1, y = 4),
-          r = PNode(
-            'h',
-            l = PNode(
-              'g',
-              l = PNode('e', l = PEnd, r = PEnd, x = 3, y = 6),
-              r = PEnd,
-              x = 4,
-              y = 5
+    l shouldBe Node(
+      At('n', x = 8, y = 1),
+      Node(
+        At('k', x = 6, y = 2),
+        Node(
+          At('c', x = 2, y = 3),
+          Node(At('a', x = 1, y = 4), End, End),
+          Node(
+            At('h', x = 5, y = 4),
+            Node(
+              At('g', x = 4, y = 5),
+              Node(At('e', x = 3, y = 6), End, End),
+              End
             ),
-            r = PEnd,
-            x = 5,
-            y = 4
-          ),
-          x = 2,
-          y = 3
+            End
+          )
         ),
-        r = PNode('m', l = PEnd, r = PEnd, x = 7, y = 3),
-        x = 6,
-        y = 2
+        Node(At('m', x = 7, y = 3), End, End)
       ),
-      r = PNode(
-        'u',
-        l = PNode(
-          'p',
-          l = PEnd,
-          r = PNode(
-            's',
-            l = PNode('q', l = PEnd, r = PEnd, x = 10, y = 5),
-            r = PEnd,
-            x = 11,
-            y = 4
-          ),
-          x = 9,
-          y = 3
+      Node(
+        At('u', x = 12, y = 2),
+        Node(
+          At('p', x = 9, y = 3),
+          End,
+          Node(
+            At('s', x = 11, y = 4),
+            Node(At('q', x = 10, y = 5), End, End),
+            End
+          )
         ),
-        r = PEnd,
-        x = 12,
-        y = 2
-      ),
-      x = 8,
-      y = 1
+        End
+      )
     )
   }
 
