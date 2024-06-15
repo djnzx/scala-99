@@ -1,5 +1,7 @@
 package problems
 
+import cats.data.State
+import cats.implicits.toFunctorOps
 import tools.Sandbox
 
 /** [[https://aperiodic.net/pip/scala/s-99/#p64]]
@@ -25,6 +27,33 @@ object P64 {
 
     go(t, x = 1, level = 1)._1
   }
+
+  /** state (position x) is hard and error-prone, let's try to simplify
+    *
+    * S => (S, A)
+    */
+  def doLayout[A](t: Tree[A], level: Int): State[Int, Tree[At[A]]] = {
+
+    def enrich(n: Node[A]) =
+      for {
+        lt <- doLayout(n.l, level + 1)
+        x  <- State.get[Int].modify(_ + 1) // get index, use it and increment after use
+        rt <- doLayout(n.r, level + 1)
+        at = At(n.value, x, level) // position added
+      } yield Node(at, lt, rt)
+
+    t match {
+      case n @ Node(_, _, _) => enrich(n).widen
+      case End               => State.pure(End)
+    }
+  }
+
+  def layoutST[A](t: Tree[A]): Tree[At[A]] =
+    doLayout(t, level = 1)
+      // initial value of `x` (state)
+      .run(1)
+      .value
+      ._2
 
 }
 
@@ -71,6 +100,10 @@ class P64 extends Sandbox {
         End
       )
     )
+  }
+
+  test("layout - state") {
+    layout(sample) shouldBe layoutST(sample)
   }
 
 }

@@ -16,6 +16,9 @@ object P65 {
       case End           => 0
     }
 
+  def shiftAt(maxLevel: Int)(level: Int): Int =
+    1 << (maxLevel - level)
+
   def layout2[A](t: Tree[A]): Tree[At[A]] = {
 
     def go(t: Tree[A], x: Int, level: Int): (Tree[At[A]], Int) = t match {
@@ -38,14 +41,39 @@ class P65 extends Sandbox {
   import P57._
   import P65._
 
-  val sample = bstFromList(List('n', 'k', 'm', 'c', 'a', 'h', 'g', 'e', 'u', 'p', 's', 'q'))
+  val sample = bstFromList(List('n', 'k', 'm', 'c', 'a', 'e', 'd', 'g', 'u', 'p', 'q'))
 
   test("maxLevel") {
-    val testData = Seq(
-      End -> 0
+    val testData = Table(
+      inOutHeader,
+      End                                                 -> 0,
+      Node(111, End, End)                                 -> 1,
+      Node(111, Node(123, End, End), End)                 -> 2,
+      Node(111, Node(123, End, End), Node(123, End, End)) -> 2,
+      sample                                              -> 5
     )
+
+    forAll(testData) { case (bst, level) =>
+      maxLevel(bst) shouldBe level
+    }
+
   }
 
+  test("shiftAt") {
+    val testData = Table(
+      inOutHeader,
+      (5, 1) -> 16,
+      (5, 2) -> 8,
+      (5, 3) -> 4,
+      (5, 4) -> 2,
+      (5, 5) -> 1,
+    )
+
+    forAll(testData) { case ((max, level), w) =>
+      shiftAt(max)(level) shouldBe w
+    }
+
+  }
 
   test("layout") {
     val l = layout2(sample)
