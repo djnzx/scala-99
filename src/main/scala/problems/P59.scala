@@ -24,7 +24,6 @@ object P59 {
 }
 
 class P59 extends Sandbox {
-  import P55._
   import P59._
 
   test("all height balanced trees of height") {

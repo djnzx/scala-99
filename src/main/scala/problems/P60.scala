@@ -60,7 +60,6 @@ object P60 {
 }
 
 class P60 extends Sandbox {
-  import P55._
   import P60._
 
   /*

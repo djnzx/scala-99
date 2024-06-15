@@ -10,13 +10,13 @@ object P11 {
 
     @tailrec
     def go(xs: List[A], cur: Option[(A, Int)], outcome: List[Any]): List[Any] = (xs, cur) match {
-      case (Nil, None)                           => outcome                           // first step, empty given
-      case (xh :: xt, None)                      => go(xt, Some(xh, 1), outcome)      // first step, non-empty given
-      case (Nil, Some((c, 1)))                   => c :: outcome                      // last step, collected only one
-      case (Nil, Some(t))                        => t :: outcome                      // last step, collected >1
-      case (xh :: xt, Some((c, cnt))) if xh == c => go(xt, Some(c, cnt + 1), outcome) // the same letter, keep counting
-      case (xh :: xt, Some((c, 1)))              => go(xt, Some(xh, 1), c :: outcome) // the letter is different, start counting from 1
-      case (xh :: xt, Some(t))                   => go(xt, Some(xh, 1), t :: outcome) // the letter is different, start counting from 1
+      case (Nil, None)                           => outcome                             // first step, empty given
+      case (xh :: xt, None)                      => go(xt, Some((xh, 1)), outcome)      // first step, non-empty given
+      case (Nil, Some((c, 1)))                   => c :: outcome                        // last step, collected only one
+      case (Nil, Some(t))                        => t :: outcome                        // last step, collected >1
+      case (xh :: xt, Some((c, cnt))) if xh == c => go(xt, Some((c, cnt + 1)), outcome) // the same letter, keep counting
+      case (xh :: xt, Some((c, 1)))              => go(xt, Some((xh, 1)), c :: outcome) // the letter is different, start counting from 1
+      case (xh :: xt, Some(t))                   => go(xt, Some((xh, 1)), t :: outcome) // the letter is different, start counting from 1
     }
 
     go(xs, None, Nil).reverse
@@ -37,13 +37,13 @@ object P11 {
 
     @tailrec
     def go(xs: List[A], cur: Option[(A, Int)], outcome: List[Or[A]]): List[Or[A]] = (xs, cur) match {
-      case (Nil, None)                           => outcome                                     // first step, empty given
-      case (xh :: xt, None)                      => go(xt, Some(xh, 1), outcome)                // first step, non-empty given
-      case (Nil, Some((c, 1)))                   => Just(c) :: outcome                          // last step, collected only one
-      case (Nil, Some((c, n)))                   => Group(c, n) :: outcome                      // last step, collected >1
-      case (xh :: xt, Some((c, cnt))) if xh == c => go(xt, Some(c, cnt + 1), outcome)           // the same letter, keep counting
-      case (xh :: xt, Some((c, 1)))              => go(xt, Some(xh, 1), Just(c) :: outcome)     // the letter is different, start counting from 1
-      case (xh :: xt, Some((c, n)))              => go(xt, Some(xh, 1), Group(c, n) :: outcome) // the letter is different, start counting from 1
+      case (Nil, None)                           => outcome                                       // first step, empty given
+      case (xh :: xt, None)                      => go(xt, Some((xh, 1)), outcome)                // first step, non-empty given
+      case (Nil, Some((c, 1)))                   => Just(c) :: outcome                            // last step, collected only one
+      case (Nil, Some((c, n)))                   => Group(c, n) :: outcome                        // last step, collected >1
+      case (xh :: xt, Some((c, cnt))) if xh == c => go(xt, Some((c, cnt + 1)), outcome)           // the same letter, keep counting
+      case (xh :: xt, Some((c, 1)))              => go(xt, Some((xh, 1)), Just(c) :: outcome)     // the letter is different, start counting from 1
+      case (xh :: xt, Some((c, n)))              => go(xt, Some((xh, 1)), Group(c, n) :: outcome) // the letter is different, start counting from 1
     }
 
     go(xs, None, Nil).reverse

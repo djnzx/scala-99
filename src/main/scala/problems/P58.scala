@@ -17,7 +17,6 @@ object P58 {
 }
 
 class P58 extends Sandbox {
-  import P55._
   import P58._
 
   test("all symmetric trees") {

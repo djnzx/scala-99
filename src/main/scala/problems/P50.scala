@@ -183,7 +183,7 @@ class P50 extends Sandbox {
     val input = "I'm sure, programming must be easy and interesting"
     log(input)
     log(input.length)
-    val encoded1 = input.map(c => toBin(8)(c)).mkString
+    val encoded1 = input.map(c => toBin(8)(c.toInt)).mkString
     log(encoded1)
     log(encoded1.length) // 400
 
