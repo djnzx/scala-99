@@ -95,7 +95,7 @@ object P55 {
   object Tree {
 
     def isEven(x: Int): Boolean = (x & 1) == 0
-    def isOdd: Int => Boolean = isEven
+    def isOdd(x: Int): Boolean = !isEven(x)
 
     object IsOdd {
       def unapply(x: Int): Option[Int] = Some(x).filter(isOdd)

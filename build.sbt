@@ -7,6 +7,9 @@ scalaVersion := "2.13.14"
 
 javacOptions := Seq("-source", "17", "-target", "17")
 
+// allow to take tests from main
+Test / scalaSource := (Compile / scalaSource).value
+
 // https://docs.scala-lang.org/overviews/compiler-options/
 scalacOptions ++= Seq(
   "-feature",      // Emit warning and location for usages of features that should be imported explicitly
