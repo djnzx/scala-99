@@ -15,34 +15,57 @@ object P66 {
   case class Shape(sh: List[(Int, Int)])
   case class Shaped[A](value: A, shape: Shape)
 
-  def combine(ls: Shape, rs: Shape): Shape = {
-    val l: List[(Int, Int)] = ls.sh
-    val r: List[(Int, Int)] = rs.sh
+  def calcDistanceBetween(n: Int): Int = n match {
+    case 0                 => 2
+    case n if (n & 1) == 1 => n + 1
+    case n                 => n + 2
+  }
 
-    ???
+  def detectShift(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
+    // analyze only common parts
+    val both = (ls zip rs).map { case ((_, l), (r, _)) => l -> r }
+    // analyze max RIGHT OFFSET for the LEFT PART
+    val offsetL = both.map(_._1).foldLeft(0)(_ max _)
+    // analyze max LEFT OFFSET for the RIGHT PART
+    val offsetR = both.map(_._2).foldLeft(0)(_ max math.abs(_)) // left is negative
+    // total width (minimal)
+    val width = offsetL + offsetR
+    // how close we can put them
+    val distance = both
+      .map { case (l, r) => (l, width + r) } // make offsets absolute
+      .map { case lr @ (l, r) => (r - l) -> lr } // distance
+      .minByOption { case (dist, _) => dist }
+      .map(_._2)                                                // l, r (positions)
+      .map { case (lpos, rpos) => lpos + (width - rpos) } // sum of offsets
+      .map(calcDistanceBetween)
+      .getOrElse(2)                                             // minimal distance by default
+
+    distance / 2
+  }
+
+  def shiftAndCombine(xs: (Option[(Int, Int)], Option[(Int, Int)]), shift: Int): (Int, Int) =
+    xs match {
+      case (Some((l, _)), Some((_, r))) => (l - shift) -> (r + shift) // left part <=, right part =>
+      case (Some((l, r)), None)         => (l - shift) -> (r - shift) // both parts <=
+      case (None, Some((l, r)))         => (l + shift) -> (r + shift) // both parts =>
+      case _                            => 0           -> 0           // never happen due to the nature of ZipAll
+    }
+
+  def combine(ls: List[(Int, Int)], rs: List[(Int, Int)]): List[(Int, Int)] = {
+    val shift = detectShift(ls, rs)
+
+    (0, 0) ::
+      ls.map(_.some)
+        .zipAll(rs.map(_.some), None, None)
+        .map(shiftAndCombine(_, shift))
   }
 
   def shape(n: Tree[_]): Shape = n match {
     case End           => Shape(List.empty)
-    case Node(_, l, r) => combine(shape(l), shape(r))
+    case Node(_, l, r) => Shape(combine(shape(l).sh, shape(r).sh))
   }
 
-  def join(l: List[(Int, Int)], r: List[(Int, Int)]): List[(Int, Int)] = {
-    val lmax = l.map { case (_, r) => r }.maxOption.getOrElse(0)
-    val rmax = r.map { case (l, _) => l }.minOption.getOrElse(0)
-    val ldist = math.abs(lmax)
-    val rdist = math.abs(rmax)
-    pprint.log(lmax)
-    pprint.log(rmax)
-    val mx = lmax max -rmax // 1
-    val shift = mx + 1
-
-    (0, 0) ::
-      (l zip r)
-        .map { case ((ll, _), (_, rr)) => (-shift + ll, shift + rr) }
-  }
-
-  def layout3[A](t: Tree[A]): Tree[At[A]] = ???
+  def layout3[A](t: Tree[A]) = shape(t)
 
 }
 
@@ -50,7 +73,37 @@ class P66 extends Sandbox {
   import P57._
   import P66._
 
-  test("join - plain 1") {
+  test("calcDistanceBetween") {
+    val testData = Table(
+      inOutHeader,
+      0 -> 2,
+      1 -> 2,
+      2 -> 4,
+      3 -> 4,
+      4 -> 6,
+      5 -> 6,
+      6 -> 8,
+      7 -> 8,
+      8 -> 10,
+    )
+
+    forAll(testData) { case (in, out) =>
+      calcDistanceBetween(in) shouldBe out
+    }
+
+  }
+
+  test("combine 1 - plain") {
+    val l = List(0 -> 0)
+    val r = List(0 -> 0)
+    val j = combine(l, r)
+    j shouldBe List(
+      0  -> 0,
+      -1 -> 1,
+    )
+  }
+
+  test("combine 2 - plain") {
     val l = List(
       0  -> 0,
       -1 -> 1
@@ -59,14 +112,98 @@ class P66 extends Sandbox {
       0  -> 0,
       -1 -> 1
     )
-    val x: List[(Int, Int)] = join(l, r)
-    pprint.log(x)
-    x shouldBe List(
+    val j = combine(l, r)
+    j shouldBe List(
       0  -> 0,
       -2 -> 2,
       -3 -> 3
     )
+  }
 
+  test("combine 3 - optimized") {
+    val l = List(
+      0 -> 0,
+      1 -> 1
+    )
+    val r = List(
+      0 -> 0,
+      1 -> 1
+    )
+    val j = combine(l, r)
+    j shouldBe List(
+      0  -> 0,
+      -1 -> 1,
+      0  -> 2
+    )
+  }
+
+  test("combine 4 - can't be optimized") {
+    val l = List(
+      0 -> 0,
+      1 -> 1
+    )
+    val r = List(
+      0  -> 0,
+      -1 -> -1
+    )
+    val j = combine(l, r)
+    j shouldBe List(
+      0  -> 0,
+      -2 -> 2,
+      -1 -> 1
+    )
+  }
+
+  test("combine 5 - optimized complicated") {
+    val l = List(
+      0 -> 0,
+      1 -> 1,
+      2 -> 2,
+      3 -> 3,
+    )
+    val r = List(
+      0 -> 0,
+      1 -> 1,
+      2 -> 2,
+    )
+    val j = combine(l, r)
+    j shouldBe List(
+      0  -> 0,
+      -1 -> 1,
+      0  -> 2,
+      1  -> 3,
+      2  -> 2,
+    )
+  }
+
+  test("combine 6 - optimized zig-zag") {
+    val l = List(
+      0  -> 0,
+      1  -> 1,
+      0  -> 0,
+      -1 -> -1,
+      0  -> 0,
+      1  -> 1,
+      2  -> 2,
+    )
+    val r = List(
+      0  -> 0,
+      1  -> 1,
+      0  -> 0,
+      -1 -> -1,
+      0  -> 0,
+    )
+    val j = combine(l, r)
+    j shouldBe List(
+      0  -> 0,
+      -1 -> 1,
+      0  -> 2,
+      -1 -> 1,
+      -2 -> 0,
+      -1 -> 1,
+      0  -> 0,
+      1  -> 1,
+    )
   }
 
   val sample = bstFromList(List('n', 'k', 'm', 'c', 'a', 'e', 'd', 'g', 'u', 'p', 'q'))
