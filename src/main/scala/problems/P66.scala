@@ -12,9 +12,26 @@ object P66 {
   import P64._
   import P65._
 
+  case class Shape(sh: List[(Int, Int)])
+  case class Shaped[A](value: A, shape: Shape)
+
+  def combine(ls: Shape, rs: Shape): Shape = {
+    val l: List[(Int, Int)] = ls.sh
+    val r: List[(Int, Int)] = rs.sh
+
+    ???
+  }
+
+  def shape(n: Tree[_]): Shape = n match {
+    case End           => Shape(List.empty)
+    case Node(_, l, r) => combine(shape(l), shape(r))
+  }
+
   def join(l: List[(Int, Int)], r: List[(Int, Int)]): List[(Int, Int)] = {
-    val lmax = l.maxBy { case (l, r) => r }._2
-    val rmax = r.minBy { case (l, r) => l }._1
+    val lmax = l.map { case (_, r) => r }.maxOption.getOrElse(0)
+    val rmax = r.map { case (l, _) => l }.minOption.getOrElse(0)
+    val ldist = math.abs(lmax)
+    val rdist = math.abs(rmax)
     pprint.log(lmax)
     pprint.log(rmax)
     val mx = lmax max -rmax // 1
@@ -33,7 +50,7 @@ class P66 extends Sandbox {
   import P57._
   import P66._
 
-  test("join") {
+  test("join - plain 1") {
     val l = List(
       0  -> 0,
       -1 -> 1
