@@ -64,7 +64,32 @@ object P66 {
     case Node(_, l, r) => Shape(combine(shape(l).sh, shape(r).sh))
   }
 
-  def layout3[A](t: Tree[A]) = shape(t)
+  def enrich[A](t: Tree[A], level: Int, xc: Int = 0): Tree[At[A]] = t match {
+    case End               => End
+    case Node(value, l, r) =>
+      val at = At(value, x = xc, y = level)
+      // TODO: analyze
+      val lt = enrich(l, level + 1, xc)
+      val rt = enrich(r, level + 1, xc)
+      Node(at, lt, rt)
+  }
+
+  // TODO: combine enrich + shape to use the details
+  def layout0[A](t: Tree[A]): Tree[Shaped[A]] = ???
+
+  def index[A](t: Tree[Shaped[A]], level: Int, xc: Int): Tree[At[A]] = t match {
+    case End             => End
+    case Node(shv, l, r) =>
+      val at = At(shv.value, x = xc, y = level)
+      val lt = index(l, level + 1, xc) // TODO: modify Shape to contain shift
+      val rt = index(r, level + 1, xc) // TODO: modify Shape to contain shift
+      Node(at, lt, rt)
+  }
+
+  def layout3[A](t: Tree[A]): Tree[At[A]] = {
+    val sh = layout0(t)
+    index(sh, level = 1, xc = 0)
+  }
 
 }
 
@@ -205,6 +230,11 @@ class P66 extends Sandbox {
   }
 
   val sample = bstFromList(List('n', 'k', 'm', 'c', 'a', 'e', 'd', 'g', 'u', 'p', 'q'))
+
+  test("shape") {
+    val sh = shape(sample)
+    pprint.log(sh)
+  }
 
   test("layout3") {
     val l = layout3(sample)
