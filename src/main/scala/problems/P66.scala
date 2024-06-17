@@ -12,33 +12,29 @@ object P66 {
   import P64._
   import P65._
 
-  case class Shape(sh: List[(Int, Int)])
-  case class Shaped[A](value: A, shape: Shape)
-
-  def calcDistanceBetween(n: Int): Int = n match {
+  def normalizeDistance(n: Int): Int = n match {
     case 0                 => 2
     case n if (n & 1) == 1 => n + 1
     case n                 => n + 2
   }
 
-  def detectShift(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
+  def calculateShift(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
     // analyze only common parts
     val both = (ls zip rs).map { case ((_, l), (r, _)) => l -> r }
     // analyze max RIGHT OFFSET for the LEFT PART
-    val offsetL = both.map(_._1).foldLeft(0)(_ max _)
+    val offsetMaxL = both.map(_._1).foldLeft(0)(_ max _)
     // analyze max LEFT OFFSET for the RIGHT PART
-    val offsetR = both.map(_._2).foldLeft(0)(_ max math.abs(_)) // left is negative
+    val offsetMaxR = both.map(_._2).foldLeft(0)(_ max math.abs(_)) // left is negative
     // total width (minimal)
-    val width = offsetL + offsetR
+    val width = offsetMaxL + offsetMaxR
     // how close we can put them
-    val distance = both
-      .map { case (l, r) => (l, width + r) } // make offsets absolute
+    val distance = both                                            // offsets, each relates to its center
+      .map { case (l, r) => (l, width + r) } // make offsets absolute coordinates (right is negative)
       .map { case lr @ (l, r) => (r - l) -> lr } // distance
-      .minByOption { case (dist, _) => dist }
-      .map(_._2)                                                // l, r (positions)
-      .map { case (lpos, rpos) => lpos + (width - rpos) } // sum of offsets
-      .map(calcDistanceBetween)
-      .getOrElse(2)                                             // minimal distance by default
+      .minByOption { case (dist, _) => dist } // pick minimal distance
+      .map { case (_, (lp, rp)) => lp + (width - rp) } // sum of offsets at minimal distance
+      .map(normalizeDistance)
+      .getOrElse(2)                                                // minimal distance by default
 
     distance / 2
   }
@@ -52,13 +48,16 @@ object P66 {
     }
 
   def combine(ls: List[(Int, Int)], rs: List[(Int, Int)]): List[(Int, Int)] = {
-    val shift = detectShift(ls, rs)
+    val shift = calculateShift(ls, rs)
 
     (0, 0) ::
       ls.map(_.some)
         .zipAll(rs.map(_.some), None, None)
         .map(shiftAndCombine(_, shift))
   }
+
+  case class Shape(sh: List[(Int, Int)])
+  case class Shaped[A](value: A, shape: Shape)
 
   def shape(n: Tree[_]): Shape = n match {
     case End           => Shape(List.empty)
@@ -73,7 +72,7 @@ class P66 extends Sandbox {
   import P57._
   import P66._
 
-  test("calcDistanceBetween") {
+  test("normalizeDistance") {
     val testData = Table(
       inOutHeader,
       0 -> 2,
@@ -88,9 +87,8 @@ class P66 extends Sandbox {
     )
 
     forAll(testData) { case (in, out) =>
-      calcDistanceBetween(in) shouldBe out
+      normalizeDistance(in) shouldBe out
     }
-
   }
 
   test("combine 1 - plain") {
