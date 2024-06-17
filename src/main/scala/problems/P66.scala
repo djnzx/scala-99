@@ -8,17 +8,18 @@ import tools.Sandbox
   * [[https://aperiodic.net/pip/scala/s-99/p66.svg]]
   */
 object P66 {
+  import P55.Tree._
   import P55._
   import P64._
-  import P65._
 
   def normalizeDistance(n: Int): Int = n match {
-    case 0                 => 2
-    case n if (n & 1) == 1 => n + 1
-    case n                 => n + 2
+    case 0        => 2
+    case IsOdd(n) => n + 1
+    case n        => n + 2
   }
 
-  def calculateShift(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
+  /** put 2 trees as close as we can */
+  def calculateOffset(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
     // analyze only common parts
     val both = (ls zip rs).map { case ((_, l), (r, _)) => l -> r }
     // analyze max RIGHT OFFSET for the LEFT PART
@@ -47,54 +48,68 @@ object P66 {
       case _                            => 0           -> 0           // never happen due to the nature of ZipAll
     }
 
-  def combine(ls: List[(Int, Int)], rs: List[(Int, Int)]): List[(Int, Int)] = {
-    val shift = calculateShift(ls, rs)
-
+  def combineA(ls: List[(Int, Int)], rs: List[(Int, Int)], offset: Int): List[(Int, Int)] =
     (0, 0) ::
       ls.map(_.some)
         .zipAll(rs.map(_.some), None, None)
-        .map(shiftAndCombine(_, shift))
+        .map(shiftAndCombine(_, offset))
+
+  case class Shape(a: List[(Int, Int)], shift: Int)
+  object Shape {
+    val empty = Shape(List.empty, 0)
   }
 
-  case class Shape(sh: List[(Int, Int)])
+  def combine(ls: Shape, rs: Shape): Shape = {
+    val offset = calculateOffset(ls.a, rs.a)
+    val a = combineA(ls.a, rs.a, offset)
+    Shape(a, offset)
+  }
+
+  // tests only
+  def shape(n: Tree[_]): Shape = n match {
+    case End           => Shape.empty
+    case Node(_, l, r) => combine(shape(l), shape(r))
+  }
+
   case class Shaped[A](value: A, shape: Shape)
 
-  def shape(n: Tree[_]): Shape = n match {
-    case End           => Shape(List.empty)
-    case Node(_, l, r) => Shape(combine(shape(l).sh, shape(r).sh))
-  }
-
-  def enrich[A](t: Tree[A], level: Int, xc: Int = 0): Tree[At[A]] = t match {
-    case End               => End
+  def analyze[A](t: Tree[A]): (Tree[Shaped[A]], Shape) = t match {
+    case End               => End -> Shape.empty
     case Node(value, l, r) =>
-      val at = At(value, x = xc, y = level)
-      // TODO: analyze
-      val lt = enrich(l, level + 1, xc)
-      val rt = enrich(r, level + 1, xc)
-      Node(at, lt, rt)
+      val (lt, ls) = analyze(l) // left branch + shape
+      val (rt, rs) = analyze(r) // right branch + shape
+      val s = combine(ls, rs)   // combine shapes
+      val v = Shaped(value, s)  // build shaped value
+      Node(v, lt, rt) -> s
   }
-
-  // TODO: combine enrich + shape to use the details
-  def layout0[A](t: Tree[A]): Tree[Shaped[A]] = ???
 
   def index[A](t: Tree[Shaped[A]], level: Int, xc: Int): Tree[At[A]] = t match {
     case End             => End
     case Node(shv, l, r) =>
       val at = At(shv.value, x = xc, y = level)
-      val lt = index(l, level + 1, xc) // TODO: modify Shape to contain shift
-      val rt = index(r, level + 1, xc) // TODO: modify Shape to contain shift
+      val shift = shv.shape.shift
+      val lt = index(l, level + 1, xc - shift)
+      val rt = index(r, level + 1, xc + shift)
       Node(at, lt, rt)
   }
 
+  def shiftOfTheMostLeft(t: Tree[Shaped[_]]): Int = t match {
+    case End               => 0
+    case Node(value, l, _) => value.shape.shift + shiftOfTheMostLeft(l)
+  }
+
   def layout3[A](t: Tree[A]): Tree[At[A]] = {
-    val sh = layout0(t)
-    index(sh, level = 1, xc = 0)
+    val (sh, _) = analyze(t)
+    val center = shiftOfTheMostLeft(sh)
+    index(sh, level = 1, xc = center)
   }
 
 }
 
 class P66 extends Sandbox {
+  import P55._
   import P57._
+  import P64._
   import P66._
 
   test("normalizeDistance") {
@@ -119,7 +134,7 @@ class P66 extends Sandbox {
   test("combine 1 - plain") {
     val l = List(0 -> 0)
     val r = List(0 -> 0)
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -1 -> 1,
@@ -135,7 +150,7 @@ class P66 extends Sandbox {
       0  -> 0,
       -1 -> 1
     )
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -2 -> 2,
@@ -152,7 +167,7 @@ class P66 extends Sandbox {
       0 -> 0,
       1 -> 1
     )
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -1 -> 1,
@@ -169,7 +184,7 @@ class P66 extends Sandbox {
       0  -> 0,
       -1 -> -1
     )
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -2 -> 2,
@@ -189,7 +204,7 @@ class P66 extends Sandbox {
       1 -> 1,
       2 -> 2,
     )
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -1 -> 1,
@@ -216,7 +231,7 @@ class P66 extends Sandbox {
       -1 -> -1,
       0  -> 0,
     )
-    val j = combine(l, r)
+    val j = combineA(l, r, calculateOffset(l, r))
     j shouldBe List(
       0  -> 0,
       -1 -> 1,
@@ -233,12 +248,38 @@ class P66 extends Sandbox {
 
   test("shape") {
     val sh = shape(sample)
-    pprint.log(sh)
+    sh.a shouldBe List((0, 0), (-2, 2), (-3, 1), (-4, 2), (-3, -1))
   }
 
   test("layout3") {
-    val l = layout3(sample)
-    pprint.log(l)
+    val l3 = layout3(sample)
+    val expected =
+      Node(
+        At('n', x = 5, y = 1),
+        l = Node(
+          At('k', x = 3, y = 2),
+          l = Node(
+            At('c', x = 2, y = 3),
+            l = Node(At('a', x = 1, y = 4), l = End, r = End),
+            r = Node(
+              At('e', x = 3, y = 4),
+              l = Node(At('d', x = 2, y = 5), l = End, r = End),
+              r = Node(At('g', x = 4, y = 5), l = End, r = End)
+            )
+          ),
+          r = Node(At('m', x = 4, y = 3), l = End, r = End)
+        ),
+        r = Node(
+          At('u', x = 7, y = 2),
+          l = Node(
+            At('p', x = 6, y = 3),
+            l = End,
+            r = Node(At('q', x = 7, y = 4), l = End, r = End)
+          ),
+          r = End
+        )
+      )
+    l3 shouldBe expected
   }
 
 }
