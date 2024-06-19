@@ -35,6 +35,7 @@ libraryDependencies ++= Seq(
   compilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.3" cross CrossVersion.full), // https://github.com/typelevel/kind-projector
   compilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),                          // https://github.com/oleg-py/better-monadic-for
   "co.fs2"            %% "fs2-io"                  % "3.10.2",
+  "org.typelevel"     %% "cats-parse"              % "1.0.0",
   "com.beachape"      %% "enumeratum"              % "1.7.3",
   "com.beachape"      %% "enumeratum-circe"        % "1.7.3",
   "com.beachape"      %% "enumeratum-cats"         % "1.7.3",

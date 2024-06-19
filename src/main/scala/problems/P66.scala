@@ -19,26 +19,12 @@ object P66 {
   }
 
   /** put 2 trees as close as we can */
-  def calculateOffset(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int = {
-    // analyze only common parts
-    val both = (ls zip rs).map { case ((_, l), (r, _)) => l -> r }
-    // analyze max RIGHT OFFSET for the LEFT PART
-    val offsetMaxL = both.map(_._1).foldLeft(0)(_ max _)
-    // analyze max LEFT OFFSET for the RIGHT PART
-    val offsetMaxR = both.map(_._2).foldLeft(0)(_ max math.abs(_)) // left is negative
-    // total width (minimal)
-    val width = offsetMaxL + offsetMaxR
-    // how close we can put them
-    val distance = both                                            // offsets, each relates to its center
-      .map { case (l, r) => (l, width + r) } // make offsets absolute coordinates (right is negative)
-      .map { case lr @ (l, r) => (r - l) -> lr } // distance
-      .minByOption { case (dist, _) => dist } // pick minimal distance
-      .map { case (_, (lp, rp)) => lp + (width - rp) } // sum of offsets at minimal distance
+  def calculateOffset(ls: List[(Int, Int)], rs: List[(Int, Int)]): Int =
+    (ls lazyZip rs)      // analyze only common parts
+      .map { case ((_, l), (r, _)) => l - r } // width of inner shapes
+      .maxOption         // the most wide shape
       .map(normalizeDistance)
-      .getOrElse(2)                                                // minimal distance by default
-
-    distance / 2
-  }
+      .getOrElse(2) >> 1 // minimal distance by default
 
   def shiftAndCombine(xs: (Option[(Int, Int)], Option[(Int, Int)]), shift: Int): (Int, Int) =
     xs match {
