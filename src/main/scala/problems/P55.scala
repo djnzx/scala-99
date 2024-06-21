@@ -91,6 +91,7 @@ object P55 {
   case object End extends Tree[Nothing]
   object Node {
     def apply[A](value: A): Node[A] = Node(value, End, End)
+    def apply[A](value: A, l: A, r: A): Node[A] = Node(value, Node(l), Node(r))
   }
   object Tree {
 

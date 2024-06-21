@@ -1,20 +1,16 @@
 package tools
 
-object Timed {
+trait Timed {
 
-  def time(): Long = System.currentTimeMillis
+  def now: Long = System.currentTimeMillis
 
   def timed[A](body: => A): (A, Long) = {
-    val start = time()
+    val started = now
     val a: A = body
-    val spent = time() - start
+    val spent = now - started
     (a, spent)
   }
 
-  def printTimed[A](body: => A, name: String = "res") = {
-    val (a, spent) = timed(body)
-    println(s"$name: $a")
-    println(s"Spent: ${spent}ms")
-  }
-
 }
+
+object Timed extends Timed

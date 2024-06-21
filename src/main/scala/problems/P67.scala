@@ -16,12 +16,9 @@ object P67 {
     case Node(value, l, r)     => s"$value(${stringify(l)},${stringify(r)})"
   }
 
-  object p {
+  class p[A](value: Parser[A]) {
     import cats.parse.Parser.char
-    import cats.parse.Parser.charIn
 
-    /** valueParser */
-    val value = charIn('a' to 'z')
     val comma = char(',')
 
     /** whatever wrapped into parenthesis */
@@ -46,19 +43,26 @@ object P67 {
     val end = Parser.unit
       .as(End: Tree[Nothing])
 
-    def node: Parser0[Tree[Char]] =
+    def node: Parser0[Tree[A]] =
       fullNode.backtrack | partLeftNode.backtrack | partRightNode.backtrack | terminalNode.backtrack | end
 
     def tree = node
   }
 
-  def parse(raw: String): Tree[Char] =
-    p.tree
+  def parse0[A](valueParser: Parser[A])(raw: String): Tree[A] =
+    new p(valueParser)
+      .tree
       .parseAll(raw)
       .fold(
         e => throw new RuntimeException(e.toString),
         identity
       )
+
+  val charParser: Parser[Char] = Parser.charIn('a' to 'z')
+
+  object p extends p(charParser)
+
+  def parse: String => Tree[Char] = parse0(charParser)
 
 }
 
