@@ -1,7 +1,6 @@
 package problems
 
 import cats.implicits.toComposeOps
-import problems.P64A.tPreOrder
 import tools.Sandbox
 
 /** [[https://aperiodic.net/pip/scala/s-99/#p69]]
@@ -51,8 +50,6 @@ object P69 {
 
 class P69 extends Sandbox {
 
-  import P55._
-  import P64A._
   import P69._
 
   val parens = "a(b(d,e),c(,f(g,)))"
