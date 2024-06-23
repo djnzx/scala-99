@@ -5,6 +5,7 @@ import cats.implicits.toFoldableOps
 import tools.Sandbox
 
 /** [[https://aperiodic.net/pip/scala/s-99/#p70c]]
+  *
   * [[https://aperiodic.net/pip/scala/s-99/p70.svg]]
   */
 object P70 {

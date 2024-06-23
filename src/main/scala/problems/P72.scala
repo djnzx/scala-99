@@ -2,7 +2,7 @@ package problems
 
 import tools.Sandbox
 
-/** https://aperiodic.net/pip/scala/s-99/#p72
+/** [[https://aperiodic.net/pip/scala/s-99/#p72]]
   */
 object P72 {
 

@@ -22,7 +22,7 @@ object P67 {
     val comma = char(',')
 
     /** whatever wrapped into parenthesis */
-    def br[A](pa: Parser[A]) = pa.between(char('('), char(')'))
+    def br[B](pa: Parser[B]) = pa.between(char('('), char(')'))
 
     /** a(b,c) - full node - Node(a, Node(b), Node(c)) */
     def fullNode = Parser.defer(value ~ br(node.with1 ~ (comma *> node)))
