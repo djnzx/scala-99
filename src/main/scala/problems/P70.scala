@@ -16,7 +16,7 @@ object P70 {
   object MTree {
     def apply[A](value: A): MTree[A] = new MTree(value, List())
     def apply[A](value: A, children: List[MTree[A]]): MTree[A] = new MTree(value, children)
-    def apply[A](value: A, children: A*): MTree[A] = new MTree(value, children.map(MTree(_)).toList)
+    def apply[A](value: A, children: MTree[A]*): MTree[A] = new MTree(value, children.toList)
   }
 
   def countNodes(t: MTree[_]): Int =
